@@ -10122,11 +10122,13 @@ function RenderFunctions:WhitelistBed(bed)
     local bedteam = bed:GetAttribute('id'):sub(1, 1)
     local lplr = game.Players.LocalPlayer 
 
+    local lplrPlayerType = RenderFunctions:GetPlayerType(3, lplr)
     warningNotification("Vape", "Bed Team: " .. tostring(bedteam), 25)
     warningNotification("Blackie", "Local Player Type: " .. tostring(lplrPlayerType), 25)
-																																																																																																
+    
     for i,v in next, RenderFunctions:GetAllSpecial() do 
-        if RenderFunctions:GetPlayerType(3, v) > RenderFunctions:GetPlayerType(3, lplr) and v:GetAttribute('Team') == bedteam then 
+        local playerType = RenderFunctions:GetPlayerType(3, v)
+        if playerType > lplrPlayerType and v:GetAttribute('Team') == bedteam then 
             warningNotification("Blackie", "Whitelisted player found: " .. v.Name .. " (PlayerType: " .. tostring(playerType) .. ")", 25)
             return true
         end
@@ -10134,6 +10136,7 @@ function RenderFunctions:WhitelistBed(bed)
     warningNotification("Vape", "No whitelisted players found", 25)
     return false
 end
+
 
 getTablePosition = function(tab, val, first)
 	local count = 0
