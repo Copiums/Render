@@ -10225,37 +10225,44 @@ gethighestblock = function(position, smart, raycast, customvector)
 end
 
 getEnemyBed = function(range, skiphighest, noshield)
-	local magnitude, bed = (range or math.huge), nil
-	if not isAlive(lplr, true) and not entityLibrary.LocalPosition then 
-		return nil 
-	end
-	local beds = collectionService:GetTagged('bed')
-	for i,v in next, beds do 
-		if not RenderFunctions:WhitelistBed(v) and v:GetAttribute('PlacedByUserId') == 0 then 
-			local localpos = (isAlive(lplr, true) and lplr.Character.HumanoidRootPart.Position or entityLibrary.LocalPosition or Vector3.zero)
-			local bedmagnitude = (localpos - v.Position).Magnitude 
-			local bedteam = v:GetAttribute('id'):sub(1, 1)
-			if bedteam == lplr:GetAttribute('Team') then 
-				continue 
-			end
-			if noshield and v:GetAttribute('BedShieldEndTime') and v:GetAttribute('BedShieldEndTime') > workspace:GetServerTimeNow() then 
-				continue  
-			end
-			if bedmagnitude < magnitude then 
-				bed = v
-				magnitude = bedmagnitude
-			end
-		end
-	end
-	local highest = gethighestblock(bed and bed.Position, true)
-	if bed and highest and not skiphighest then 
-		bed = highest.Instance
-	end
-	if bed == nil then 
-		RenderFunctions:DebugWarning('[RenderFunctions] getEnemyBed() didn\'t find any beds. There was a total of '..(#beds)..' beds.')
-	end
-	return bed
+    local magnitude, bed = (range or math.huge), nil
+    if not isAlive(lplr, true) and not entityLibrary.LocalPosition then 
+        return nil 
+    end
+    local beds = collectionService:GetTagged('bed')
+    createwarning("Debug", "[getEnemyBed] Total beds found: " .. #beds, 50)
+    for i,v in next, beds do 
+        if not WhitelistFunctions:WhitelistBed(v) and v:GetAttribute('PlacedByUserId') == 0 then 
+            local localpos = (isAlive(lplr, true) and lplr.Character.HumanoidRootPart.Position or entityLibrary.LocalPosition or Vector3.zero)
+            local bedmagnitude = (localpos - v.Position).Magnitude 
+            local bedteam = v:GetAttribute('id'):sub(1, 1)
+            local playerTeam = lplr:GetAttribute('Team')
+            
+            if bedteam == playerTeam then 
+                createwarning("Debug", "[getEnemyBed] Bed " .. v.Name .. " belongs to the same team as the player", 50)
+                -- Skip this bed and continue to the next one
+                continue
+            end
+            if noshield and v:GetAttribute('BedShieldEndTime') and v:GetAttribute('BedShieldEndTime') > workspace:GetServerTimeNow() then 
+                createwarning("Debug", "[getEnemyBed] Bed " .. v.Name .. " has an active bed shield", 50)
+                continue  
+            end
+            if bedmagnitude < magnitude then 
+                bed = v
+                magnitude = bedmagnitude
+            end
+        end
+    end
+    local highest = gethighestblock(bed and bed.Position, true)
+    if bed and highest and not skiphighest then 
+        bed = highest.Instance
+    end
+    if bed == nil then 
+        WhitelistFunctions:DebugWarning('[WhitelistFunctions] getEnemyBed() didn\'t find any beds. There was a total of '..(#beds)..' beds.')
+    end
+    return bed
 end
+
 
 playSound = function(soundID, loop)
 	soundID = (soundID or ''):gsub('rbxassetid://', '')
